@@ -74,22 +74,21 @@ class Orderbook:
         return heapq.heappop(self.asks)
     
     def match_orders(self):
-        # while lowest bid is >= highest ask
         # match orders
-        if len(self.bids) > 0 and len(self.asks) > 0:
-            while self.bids[0].price >= self.asks[0].price:
-                bid = self.get_bid()
-                ask = self.get_ask()
-                if bid.quantity > ask.quantity:
-                    bid.quantity -= ask.quantity
-                    self.add_bid(bid)
-                elif bid.quantity < ask.quantity:
-                    ask.quantity -= bid.quantity
-                    self.add_ask(ask)
-                else:
-                    # both orders are filled
-                    # TODO: add to trade history
-                    ...
+        # while lowest bid is >= highest ask
+        while len(self.bids) > 0 and len(self.asks) > 0 and self.bids[0].price >= self.asks[0].price:
+            bid = self.get_bid()
+            ask = self.get_ask()
+            if bid.quantity > ask.quantity:
+                bid.quantity -= ask.quantity
+                self.add_bid(bid)
+            elif bid.quantity < ask.quantity:
+                ask.quantity -= bid.quantity
+                self.add_ask(ask)
+            else:
+                # both orders are filled
+                # TODO: add to trade history
+                ...
 
     def __repr__(self):
         return f"Orderbook: symbol={self.symbol},\nbids={self.bids},\nasks={self.asks}"

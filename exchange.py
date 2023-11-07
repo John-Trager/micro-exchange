@@ -9,7 +9,10 @@ class Exchange:
         self.orderbooks = {}
         self.trades = [] # list of trades TODO
 
-    def add_orderbook(self, symbol: str) -> None:
+    def create_orderbook(self, symbol: str) -> None:
+        if symbol in self.orderbooks:
+            raise ValueError(f"Orderbook for {symbol} already exists")
+        
         self.orderbooks[symbol] = Orderbook(symbol)
 
     def add_order(self, order: Order) -> bool:
@@ -27,8 +30,8 @@ class Exchange:
 
 if __name__ == '__main__':
     exchange = Exchange()
-    exchange.add_orderbook('AAPL')
-    exchange.add_orderbook('MSFT')
+    exchange.create_orderbook('AAPL')
+    exchange.create_orderbook('MSFT')
 
     Order(100,10,1,0,'bid','AAPL')
 
