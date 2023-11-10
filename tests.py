@@ -1,6 +1,12 @@
+'''
+This file contains unit tests for the exchange and orderbook classes.
+
+to run tests: `pytest tests.py`
+'''
 import pytest
-from exchange import Exchange
-from orderbook import Orderbook, Order
+from exchange import Exchange, Client
+from orderbook import Orderbook
+from utils import Order, OrderType, Trade
 
 # write out test cases for the exchange and orderbook classes using pytest
 
@@ -11,20 +17,20 @@ def test_orderbook_init():
 
 def test_place_bid_order():
     orderbook = Orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     orderbook.add_bid(order)
     assert len(orderbook.bids) == 1 and len(orderbook.asks) == 0, "Order should be placed in bids"
 
 def test_place_ask_order():
     orderbook = Orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "ask", "AAPL")
+    order = Order(150.0, 100, 0, 0, OrderType.ASK, "AAPL")
     orderbook.add_ask(order)
     assert len(orderbook.asks) == 1 and len(orderbook.bids) == 0, "Order should be placed in asks"
 
 def test_match_orders():
     orderbook = Orderbook("AAPL")
-    buy_order = Order(150.0, 100, 0, 0, "bid", "AAPL")
-    sell_order = Order(150.0, 100, 0, 0, "ask", "AAPL")
+    buy_order = Order(150.0, 100, 0, 1, OrderType.BID, "AAPL")
+    sell_order = Order(150.0, 100, 0, 2, OrderType.ASK, "AAPL")
     orderbook.add_bid(buy_order)
     orderbook.add_ask(sell_order)
     assert len(orderbook.bids) == 0, "Buy orders should be empty after matching"
@@ -36,8 +42,8 @@ def test_orderbook_no_orders():
 
 def test_orderbook_unmatched_orders():
     orderbook = Orderbook("AAPL")
-    buy_order = Order(150.0, 100, 0, 0, "bid", "AAPL")
-    sell_order = Order(160.0, 100, 0, 0, "ask", "AAPL")  # Price too high to match
+    buy_order = Order(150.0, 100, 0, 1, OrderType.BID, "AAPL")
+    sell_order = Order(160.0, 100, 0, 2, OrderType.ASK, "AAPL")  # Price too high to match
     orderbook.add_bid(buy_order)
     orderbook.add_ask(sell_order)
     assert len(orderbook.bids) == 1, "Buy order should remain unmatched"
@@ -63,14 +69,16 @@ def test_exchange_duplicate_orderbook():
 def test_exchange_add_order():
     exchange = Exchange()
     exchange.create_orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    exchange.create_client(Client(0,1000))
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     exchange.add_order(order)
     assert len(exchange.orderbooks["AAPL"].bids) == 1, "Order should be added to orderbook"
 
 def test_exchange_cancel_order():
     exchange = Exchange()
     exchange.create_orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    exchange.create_client(Client(0,1000))
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     exchange.add_order(order)
     exchange.cancel_order("AAPL", 0)
     assert len(exchange.orderbooks["AAPL"].bids) == 0, "Order should be removed from orderbook"
@@ -78,20 +86,23 @@ def test_exchange_cancel_order():
 def test_exchange_cancel_order_invalid_orderbook():
     exchange = Exchange()
     exchange.create_orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    exchange.create_client(Client(0,1000))
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     exchange.add_order(order)
     assert not exchange.cancel_order("MSFT", 0), "Cancel order should return False if orderbook doesn't exist"
 
 def test_exchange_cancel_order_invalid_order():
     exchange = Exchange()
     exchange.create_orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    exchange.create_client(Client(0,1000))
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     exchange.add_order(order)
     assert not exchange.cancel_order("AAPL", 1), "Cancel order should return False if order doesn't exist"
 
 def test_exchange_cancel_order_invalid_order_id():
     exchange = Exchange()
     exchange.create_orderbook("AAPL")
-    order = Order(150.0, 100, 0, 0, "bid", "AAPL")
+    exchange.create_client(Client(0,1000))
+    order = Order(150.0, 100, 0, 0, OrderType.BID, "AAPL")
     exchange.add_order(order)
     assert not exchange.cancel_order("AAPL", 1), "Cancel order should return False if order doesn't exist"
